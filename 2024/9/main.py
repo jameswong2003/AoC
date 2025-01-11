@@ -1,33 +1,51 @@
+import sys
+import re
+from collections import defaultdict, Counter, deque
+import pyperclip as pc
 infile = 'data.txt'
+p1 = 0
+p2 = 0
 D = open(infile).read().strip()
 
-res = []
-id = 0
-idx = 0
-while idx < len(D):
-    if idx == len(D) - 1:
-        res += [str(id)] * int(D[idx])
-        break
+def solve(part2):
+    A = deque([])
+    SPACE = deque([])
+    file_id = 0
+    FINAL = []
+    pos = 0
+    for i,c in enumerate(D):
+        if i%2==0:
+            if part2:
+                A.append((pos, int(c), file_id))
+            for i in range(int(c)):
+                FINAL.append(file_id)
+                if not part2:
+                    A.append((pos, 1, file_id))
+                pos += 1
+            file_id += 1
+        else:
+            SPACE.append((pos, int(c)))
+            for i in range(int(c)):
+                FINAL.append(None)
+                pos += 1
 
-    if idx % 2 == 0:
-        res += [str(id)] * int(D[idx])
-        id += 1
-    else:
-        res += '.' * int(D[idx])
-    
-    idx += 1
+    for (pos, sz, file_id) in reversed(A):
+        for space_i,(space_pos, space_sz) in enumerate(SPACE):
+            if space_pos < pos and sz <= space_sz:
+                for i in range(sz):
+                    assert FINAL[pos+i] == file_id, f'{FINAL[pos+i]=}'
+                    FINAL[pos+i] = None
+                    FINAL[space_pos+i] = file_id
+                SPACE[space_i] = (space_pos + sz, space_sz-sz)
+                break
 
-l, r = 0, len(res) - 1
-while l < len(res) and l < r:
-    if res[l] == '.':
-        while res[r] == '.':
-            r -= 1
-        
-        res[l] = res[r]
-        res[r] = '.'
-    l += 1
+    ans = 0
+    for i,c in enumerate(FINAL):
+        if c is not None:
+            ans += i*c
+    return ans
 
-p1 = 0
-for i in range(len(res)):
-    p1 += int(res[i]) * i if res[i] != '.' else 0
-print(p1)
+p1 = solve(False)
+p2 = solve(True)
+pr(p1)
+pr(p2)
