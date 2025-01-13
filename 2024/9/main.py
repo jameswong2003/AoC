@@ -47,5 +47,5 @@ def solve(part2):
 
 p1 = solve(False)
 p2 = solve(True)
-pr(p1)
-pr(p2)
+print(p1)
+print(p2)
